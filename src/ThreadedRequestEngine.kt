@@ -26,6 +26,7 @@ open class ThreadedRequestEngine(url: String, val threads: Int, maxQueueSize: In
     init {
 
         internalSettings.put("ignoreLength", false)
+        internalSettings.put("noConnectionOverrides", false)
 
         idleTimeout *= 1000
         lastLife = System.currentTimeMillis()
@@ -142,7 +143,8 @@ open class ThreadedRequestEngine(url: String, val threads: Int, maxQueueSize: In
             prepared = prepared.replaceFirst("HTTP/2\r\n", "HTTP/1.1\r\n")
         }
 
-        if(Utils.getHeaders(prepared).contains("Connection: close")) {
+        // add a check here and don't do the if below if noConnectionOverrides is true
+        if (!(internalSettings.get("noConnectionOverrides") as Boolean) && Utils.getHeaders(prepared).contains("Connection: close")) {
             prepared = prepared.replaceFirst("Connection: close", "Connection: keep-alive")
         }
 
